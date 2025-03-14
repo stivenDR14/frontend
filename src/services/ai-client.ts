@@ -17,6 +17,7 @@ export async function sendQuery(
   const stream = new ReadableStream({
     async start(controller) {
       try {
+        const decoder = new TextDecoder();
         // Make the request to the backend API
         const requestOptions = {
           method: "POST",
@@ -70,8 +71,10 @@ export async function sendQuery(
           }
 
           // Convert the chunk to text
-          const chunk = new TextDecoder().decode(value);
+          const chunk = decoder.decode(value);
           const lines = chunk.split("\n");
+
+          console.log("lines from service:", lines);
 
           // Process the lines to identify events and data
           for (let i = 0; i < lines.length; i++) {

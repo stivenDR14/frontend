@@ -1,34 +1,85 @@
-import { sendQuery } from "../../../services/ai-client";
+import { env } from "@/config/env";
+import { encodeSSE } from "@/helpers/sse.helper";
+import { NextRequest, NextResponse } from "next/server";
 
-// This line sets the runtime environment for the API route to "edge".
-// Edge runtimes are designed to run closer to the user, providing lower latency and faster response times.
+// Set the runtime environment for the API route to "edge" for lower latency and faster response times
 export const runtime = "edge";
 
-export async function POST(req: Request) {
+// Force the route to be dynamic, ensuring it always fetches fresh data
+export const dynamic = "force-dynamic";
+
+export async function GET(req: NextRequest) {
   try {
-    // Extract the query and sessionId from the body
-    const { query, sessionId } = await req.json();
+    const { searchParams } = new URL(req.url);
+    const query = searchParams.get("query");
+    const sessionId = searchParams.get("sessionId");
+    const requestOptions = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        query,
+        session_id: sessionId,
+      }),
+    };
+    // Create a new ReadableStream
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          const response = await fetch(env.AI_CLIENT_ENDPOINT, requestOptions);
 
-    // Call the sendQuery function with the query and sessionId
-    const stream = await sendQuery(query, sessionId);
+          if (!response.ok) {
+            const errorBody = await response.text();
+            console.error("API error message:", errorBody);
+            controller.enqueue(
+              encodeSSE("error", `API responded with status ${response.status}`)
+            );
+            controller.close();
+            return;
+          }
 
-    // Return the streaming response
-    return new Response(stream, {
+          const reader = response.body?.getReader();
+          if (!reader) {
+            controller.enqueue(encodeSSE("error", "No data received from API"));
+            controller.close();
+            return;
+          }
+
+          // Notify client of successful connection
+          controller.enqueue(encodeSSE("init", "Connecting..."));
+
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            controller.enqueue(value);
+          }
+
+          controller.close();
+          reader.releaseLock();
+        } catch (error) {
+          console.error("Stream error:", error);
+          controller.enqueue(encodeSSE("error", "Stream interrupted"));
+          controller.close();
+        }
+      },
+    });
+
+    return new NextResponse(stream, {
       headers: {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         Connection: "keep-alive",
       },
+      status: 200,
     });
   } catch (error) {
-    console.error("Error in chat API route:", error);
-    return new Response(
-      JSON.stringify({ error: "Failed to process request" }),
+    console.error("Server error:", error);
+    return new NextResponse(
+      JSON.stringify({ error: "Internal Server Error" }),
       {
+        headers: { "Content-Type": "application/json" },
         status: 500,
-        headers: {
-          "Content-Type": "application/json",
-        },
       }
     );
   }

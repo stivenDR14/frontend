@@ -1,120 +1,49 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useEffect } from "react";
+import { UseRealtimeChat } from "./hooks/use-realtime-chat.hook";
 
 export default function Home() {
   const sessionId = "user-" + Math.random().toString(36).substring(7);
   const [query, setQuery] = useState("");
   const [responseChunks, setResponseChunks] = useState<string>("");
   const [toolUses, setToolUses] = useState<string[]>([]);
-  const [toolOutputs, setToolOutputs] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
-  const abortControllerRef = useRef<AbortController | null>(null);
+  const [toolOutputs, setToolOutputs] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const { connect } = UseRealtimeChat(
+    setError,
+    setIsStreaming,
+    setResponseChunks,
+    setToolUses,
+    setToolOutputs,
+    sessionId,
+    query
+  );
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     if (!query.trim()) return;
 
-    // Cancel any ongoing requests
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    // Create a new AbortController
-    abortControllerRef.current = new AbortController();
-    const { signal } = abortControllerRef.current;
-
+    // Resetear estados
     setIsLoading(true);
-    setResponseChunks(""); // Clear previous responses
+    setResponseChunks("");
     setToolUses([]);
     setToolOutputs([]);
+    setError(null);
 
-    try {
-      setIsStreaming(true);
-
-      // Call the internal API route with streaming
-      const apiResponse = await fetch("/api/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query,
-          sessionId,
-        }),
-        signal,
-      });
-
-      if (!apiResponse.ok) {
-        throw new Error(`Error: ${apiResponse.status}`);
-      }
-
-      // Get the reader from the response body
-      const reader = apiResponse.body?.getReader();
-      if (!reader) {
-        throw new Error("Failed to get reader from response");
-      }
-
-      // Process the stream
-      const decoder = new TextDecoder();
-      let done = false;
-
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        done = readerDone;
-
-        if (value) {
-          const chunk = decoder.decode(value);
-          const lines = chunk.split("\n\n");
-
-          for (const line of lines) {
-            if (!line.trim() || !line.startsWith("data:")) continue;
-
-            try {
-              const data = JSON.parse(line.substring(6));
-
-              if (data.type === "chunk") {
-                console.log("chunk:", data.content);
-
-                setResponseChunks(
-                  (prev) =>
-                    prev +
-                    data.content
-                      .replace("\r", "")
-                      .replace("\n", "")
-                      .replace("\t", "")
-                );
-              } else if (data.type === "tools") {
-                if (data.toolUses && data.toolUses.length > 0) {
-                  setToolUses(data.toolUses);
-                }
-                if (data.toolOutputs && data.toolOutputs.length > 0) {
-                  setToolOutputs(data.toolOutputs);
-                }
-              } else if (data.type === "end") {
-                // End of stream
-                break;
-              }
-            } catch (err) {
-              console.error("Error parsing stream data:", err, line);
-            }
-          }
-        }
-      }
-    } catch (error) {
-      if (error instanceof Error && error.name !== "AbortError") {
-        console.error("Error fetching response:", error);
-      } else {
-        console.log("Aborted");
-      }
-    } finally {
-      setIsLoading(false);
-      setIsStreaming(false);
-      abortControllerRef.current = null;
-    }
+    // Conectar al servidor
+    connect();
   };
+
+  // Actualizar estado de carga cuando finaliza streaming
+  useEffect(() => {
+    if (!isStreaming && isLoading) {
+      setIsLoading(false);
+    }
+  }, [isStreaming, isLoading]);
 
   return (
     <div className="flex flex-col h-screen max-w-xl mx-auto p-4">
@@ -139,6 +68,12 @@ export default function Home() {
         </div>
       </form>
 
+      {error && (
+        <div className="mb-4 p-3 bg-red-100 text-red-800 rounded">
+          Error: {error}
+        </div>
+      )}
+
       <div className="flex-1 overflow-auto border rounded p-4">
         {responseChunks !== "" ? (
           <div className="mb-4">{responseChunks}</div>
@@ -148,7 +83,7 @@ export default function Home() {
 
         {/* Show tools used */}
         {toolUses.length > 0 && (
-          <div className="mt-4 p-3 bg-gray-100 rounded">
+          <div className="mt-4 p-3 bg-gray-700 rounded">
             <h3 className="font-bold mb-2">Tools Used:</h3>
             <ul className="list-disc pl-5">
               {toolUses.map((tool, index) => (
@@ -162,12 +97,14 @@ export default function Home() {
 
         {/* Show tool results */}
         {toolOutputs.length > 0 && (
-          <div className="mt-4 p-3 bg-gray-100 rounded">
+          <div className="mt-4 p-3 bg-gray-700 rounded">
             <h3 className="font-bold mb-2">Tool Results:</h3>
             <ul className="list-disc pl-5">
               {toolOutputs.map((output, index) => (
                 <li key={`output-${index}`} className="mb-1">
-                  {output}
+                  {typeof output === "string" && output.startsWith("{")
+                    ? JSON.parse(output).output
+                    : output}
                 </li>
               ))}
             </ul>
