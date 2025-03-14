@@ -12,86 +12,122 @@ export type StreamResponse = {
 export async function sendQuery(
   query: string,
   sessionId: string
-): Promise<StreamResponse> {
-  // Configurar los parámetros de la solicitud
-  const requestOptions = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      query,
-      session_id: sessionId,
-    }),
-  };
+): Promise<ReadableStream<ChunkEvent>> {
+  // Create a new ReadableStream
+  const stream = new ReadableStream({
+    async start(controller) {
+      try {
+        // Make the request to the backend API
+        const requestOptions = {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query,
+            session_id: sessionId,
+          }),
+        };
 
-  console.log("Sending request:", requestOptions);
+        // Fetch from the backend with streaming
+        const response = await fetch(
+          "http://localhost:8000/query",
+          requestOptions
+        );
 
-  // Hacer la solicitud
-  const response = await fetch("http://localhost:8000/query", requestOptions);
+        if (!response.ok) {
+          throw new Error(`API responded with status: ${response.status}`);
+        }
 
-  console.log("Response status:", response.status);
-  console.log("Response headers:", response.headers);
+        // Get the reader from the response body
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error("Failed to get reader from response");
+        }
 
-  const streamResponse: StreamResponse = {
-    tool_use: [],
-    tool_output: [],
-    chunk: [],
-  };
+        // Tool tracking
+        const toolUses = [];
+        const toolOutputs = [];
 
-  try {
-    // Obtener el texto completo de la respuesta
-    const textContent = await response.text();
+        // Process the stream
+        while (true) {
+          const { done, value } = await reader.read();
 
-    // Separar la respuesta en líneas
-    const lines = textContent.split("\n");
+          if (done) {
+            // When done, send any collected tool data
+            if (toolUses.length > 0 || toolOutputs.length > 0) {
+              controller.enqueue(
+                new TextEncoder().encode(
+                  `data: ${JSON.stringify({
+                    type: "tools",
+                    toolUses,
+                    toolOutputs,
+                  })}\n\n`
+                )
+              );
+            }
+            break;
+          }
 
-    // Procesar las líneas en pares (event y data)
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
+          // Convert the chunk to text
+          const chunk = new TextDecoder().decode(value);
+          const lines = chunk.split("\n");
 
-      if (!line) continue;
+          // Process the lines to identify events and data
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
 
-      // Verificar si la línea comienza con "event:"
-      if (line.startsWith("event:")) {
-        const eventType = line.substring(6);
+            if (!line) continue;
 
-        // Verificar si la siguiente línea contiene los datos
-        if (i + 1 < lines.length) {
-          const dataLine = lines[i + 1];
+            if (line.startsWith("event:")) {
+              const eventType = line.substring(6).trim();
 
-          // Verificar si la línea es de datos
-          if (dataLine.startsWith("data:")) {
-            const content = dataLine.substring(6);
+              // Check if there's a data line after this event
+              if (i + 1 < lines.length) {
+                const dataLine = lines[i + 1];
 
-            // Procesar según el tipo de evento
-            if (eventType.includes("chunk")) {
-              console.log("content:", content);
+                if (dataLine.startsWith("data:")) {
+                  const content = dataLine.substring(6);
 
-              streamResponse.chunk.push(content.replace("\r", ""));
-            } else if (eventType.includes("tool_use")) {
-              // Asegurarse de que el contenido no esté vacío
-              if (content.trim()) {
-                streamResponse.tool_use.push(content);
-                console.log("Tool use detected:", content);
-              }
-            } else if (eventType.includes("tool_output")) {
-              // Asegurarse de que el contenido no esté vacío
-              if (content.trim()) {
-                streamResponse.tool_output.push(content);
-                console.log("Tool output detected:", content);
+                  // Handle different event types
+                  if (eventType.includes("chunk")) {
+                    // Send the chunk directly to the client
+                    controller.enqueue(
+                      new TextEncoder().encode(
+                        `data: ${JSON.stringify({
+                          type: "chunk",
+                          content,
+                        })}\n\n`
+                      )
+                    );
+                  } else if (eventType.includes("tool_use") && content.trim()) {
+                    toolUses.push(content);
+                  } else if (
+                    eventType.includes("tool_output") &&
+                    content.trim()
+                  ) {
+                    toolOutputs.push(content);
+                  }
+
+                  i++; // Skip the data line
+                }
               }
             }
-
-            // Avanzar a la siguiente línea (ya procesada)
-            i++;
           }
         }
-      }
-    }
-  } catch (error) {
-    console.error("Error processing response:", error);
-  }
 
-  return streamResponse;
+        // Signal that we're done
+        controller.enqueue(
+          new TextEncoder().encode(
+            `data: ${JSON.stringify({ type: "end" })}\n\n`
+          )
+        );
+        controller.close();
+      } catch (error) {
+        console.error("Stream processing error:", error);
+        controller.error(error);
+      }
+    },
+  });
+  return stream;
 }

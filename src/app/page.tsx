@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { StreamResponse } from "../services/ai-client";
+import { useState, useRef } from "react";
 
 export default function Home() {
   const sessionId = "user-" + Math.random().toString(36).substring(7);
@@ -10,11 +9,22 @@ export default function Home() {
   const [toolUses, setToolUses] = useState<string[]>([]);
   const [toolOutputs, setToolOutputs] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!query.trim()) return;
+
+    // Cancel any ongoing requests
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    // Create a new AbortController
+    abortControllerRef.current = new AbortController();
+    const { signal } = abortControllerRef.current;
 
     setIsLoading(true);
     setResponseChunks(""); // Clear previous responses
@@ -22,7 +32,9 @@ export default function Home() {
     setToolOutputs([]);
 
     try {
-      // Call the internal API route instead of the AI client directly
+      setIsStreaming(true);
+
+      // Call the internal API route with streaming
       const apiResponse = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -32,30 +44,75 @@ export default function Home() {
           query,
           sessionId,
         }),
+        signal,
       });
 
       if (!apiResponse.ok) {
         throw new Error(`Error: ${apiResponse.status}`);
       }
 
-      const response: StreamResponse = await apiResponse.json();
-      console.log("Response from API:", response);
-
-      // Actualizar el estado con la respuesta
-      setResponseChunks(response.chunk.join(""));
-
-      // Actualizar herramientas utilizadas y sus salidas
-      if (response.tool_use.length > 0) {
-        setToolUses(response.tool_use);
+      // Get the reader from the response body
+      const reader = apiResponse.body?.getReader();
+      if (!reader) {
+        throw new Error("Failed to get reader from response");
       }
 
-      if (response.tool_output.length > 0) {
-        setToolOutputs(response.tool_output);
+      // Process the stream
+      const decoder = new TextDecoder();
+      let done = false;
+
+      while (!done) {
+        const { value, done: readerDone } = await reader.read();
+        done = readerDone;
+
+        if (value) {
+          const chunk = decoder.decode(value);
+          const lines = chunk.split("\n\n");
+
+          for (const line of lines) {
+            if (!line.trim() || !line.startsWith("data:")) continue;
+
+            try {
+              const data = JSON.parse(line.substring(6));
+
+              if (data.type === "chunk") {
+                console.log("chunk:", data.content);
+
+                setResponseChunks(
+                  (prev) =>
+                    prev +
+                    data.content
+                      .replace("\r", "")
+                      .replace("\n", "")
+                      .replace("\t", "")
+                );
+              } else if (data.type === "tools") {
+                if (data.toolUses && data.toolUses.length > 0) {
+                  setToolUses(data.toolUses);
+                }
+                if (data.toolOutputs && data.toolOutputs.length > 0) {
+                  setToolOutputs(data.toolOutputs);
+                }
+              } else if (data.type === "end") {
+                // End of stream
+                break;
+              }
+            } catch (err) {
+              console.error("Error parsing stream data:", err, line);
+            }
+          }
+        }
       }
     } catch (error) {
-      console.error("Error fetching response:", error);
+      if (error instanceof Error && error.name !== "AbortError") {
+        console.error("Error fetching response:", error);
+      } else {
+        console.log("Aborted");
+      }
     } finally {
       setIsLoading(false);
+      setIsStreaming(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -74,10 +131,10 @@ export default function Home() {
           />
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || isStreaming}
             className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
           >
-            {isLoading ? "Sending..." : "Send"}
+            {isLoading ? "Sending..." : isStreaming ? "Receiving..." : "Send"}
           </button>
         </div>
       </form>
@@ -89,7 +146,7 @@ export default function Home() {
           <p className="text-gray-400 mb-4">Ask a question to get started.</p>
         )}
 
-        {/* Mostrar herramientas utilizadas */}
+        {/* Show tools used */}
         {toolUses.length > 0 && (
           <div className="mt-4 p-3 bg-gray-100 rounded">
             <h3 className="font-bold mb-2">Tools Used:</h3>
@@ -103,7 +160,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* Mostrar resultados de las herramientas */}
+        {/* Show tool results */}
         {toolOutputs.length > 0 && (
           <div className="mt-4 p-3 bg-gray-100 rounded">
             <h3 className="font-bold mb-2">Tool Results:</h3>

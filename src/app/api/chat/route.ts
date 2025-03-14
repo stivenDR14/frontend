@@ -9,16 +9,15 @@ export async function POST(req: Request) {
     // Extract the query and sessionId from the body
     const { query, sessionId } = await req.json();
 
-    // Use the AI client service instead of direct fetch
-    const result = await sendQuery(query, sessionId);
+    // Call the sendQuery function with the query and sessionId
+    const stream = await sendQuery(query, sessionId);
 
-    console.log("result:", result);
-
-    // Return the processed response
-    return new Response(JSON.stringify(result), {
-      status: 200,
+    // Return the streaming response
+    return new Response(stream, {
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
       },
     });
   } catch (error) {
