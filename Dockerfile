@@ -2,30 +2,24 @@ FROM node:20.10-alpine
 
 WORKDIR /app
 
-#remove .next and node_modules
-RUN rm -rf .next node_modules
+# Instalar pnpm globalmente
+RUN npm install -g pnpm
 
-# Copy package files
-COPY package*.json ./
-COPY package-lock.json ./
+# Copiar archivos de pnpm primero para aprovechar el caché
+COPY pnpm-lock.yaml ./
+COPY package.json ./
 
-# Install dependencies
-RUN npm cache clean --force && \
-    npm i
+# Instalar dependencias con pnpm
+RUN pnpm install --frozen-lockfile
 
-# Copy source code
+# Copiar el resto de archivos
 COPY . .
 
-# Build the application
-ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+# Construir la aplicación
+RUN pnpm build
 
-ARG APP_PASSWORD
-ENV APP_PASSWORD=${APP_PASSWORD}
-
-ARG OPENAI_API_KEY
-ENV OPENAI_API_KEY=${OPENAI_API_KEY}
-
+# Exponer el puerto
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+# Iniciar la aplicación
+CMD ["pnpm", "start"]
