@@ -84,10 +84,6 @@ export const UseRealtimeChat = (
       reconnectAttemptsRef.current = 0;
     };
 
-    eventSource.onmessage = (event) => {
-      console.log("Generic message received:", event);
-    };
-
     eventSource.onerror = (errorEvent) => {
       console.error("EventSource error:", errorEvent);
 
@@ -128,7 +124,6 @@ export const UseRealtimeChat = (
   useEffect(() => {
     return () => {
       if (eventSourceRef.current) {
-        console.log("Cleaning up EventSource connection on unmount");
         eventSourceRef.current.close();
         eventSourceRef.current = null;
       }

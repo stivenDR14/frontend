@@ -6,17 +6,13 @@ export const ScheduleAppointmentStepper = (output: string) => {
   const parsedOutput = JSON.parse(output);
   let receiptStr = parsedOutput.output;
 
-  // Limpia la cadena de forma más robusta
   receiptStr = receiptStr
     .slice(1, -1)
-    .replace(/```/g, "") // Eliminar marcadores de código
-    .trim() // Eliminar espacios en blanco
-    .replace(/'/g, '"'); // Reemplazar comillas simples
+    .replace(/```/g, "")
+    .trim()
+    .replace(/'/g, '"');
 
-  // Intenta parsear el JSON
   const receiptParsed = JSON.parse(receiptStr);
-
-  console.log(receiptParsed);
 
   return (
     <div className="bg-gray-600 p-4 rounded-md shadow-md mx-4 flex-column items-center md:w-1/2 xs:w-full">

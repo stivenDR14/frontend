@@ -26,8 +26,6 @@ export default function Stepper({
   const [contentOutput, setContentOutput] = useState("");
 
   const modalContent = () => {
-    console.log(contentNameClicked);
-
     return STEP_COMPONENTS[contentNameClicked as keyof typeof STEP_COMPONENTS](
       contentOutput,
       () => {}
@@ -49,9 +47,17 @@ export default function Stepper({
             className="step relative flex flex-col items-center"
           >
             {item.done ? (
-              <div className="w-6 h-6 rounded-full border-2 border-gray-400 flex items-center justify-center">
-                <span className="text-sm">✓</span>
-              </div>
+              <button
+                className="bg-blue-500 text-white mx-2 px-2 py-2 rounded-md"
+                onClick={() => {
+                  //show a modal with the stepComponent
+                  setShowModal(true);
+                  setContentNameClicked(stepName);
+                  setContentOutput(item.output);
+                }}
+              >
+                <span className="text-sm text-white">✓</span>
+              </button>
             ) : (
               <div className="w-6 h-6 rounded-full border-2 border-gray-400"></div>
             )}
@@ -119,7 +125,7 @@ export default function Stepper({
               className="absolute top-8 right-8 text-gray-500 hover:text-gray-700"
               onClick={() => setShowModal(false)}
             >
-              <span className="text-8xl text-white">&times;</span>
+              <span className="text-6xl text-white">&times;</span>
             </button>
             {modalContent()}
           </div>

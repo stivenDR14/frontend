@@ -67,7 +67,6 @@ export default function ChatHistory({
         "last-item-chat-history"
       );
       if (chatHistoryElement) {
-        console.log("scrolling");
         chatHistoryElement.scrollIntoView({ behavior: "smooth" });
       }
     }, 200);
@@ -76,7 +75,7 @@ export default function ChatHistory({
   }, [JSON.stringify(chatHistory)]);
 
   return (
-    <div className="h-19/20 overflow-auto border rounded p-4">
+    <div className="h-19/20 overflow-auto border rounded p-4 pb-16">
       {/* Show chat history */}
       {displayedMessages.length > 0 ? (
         <div className="flex flex-col space-y-4">

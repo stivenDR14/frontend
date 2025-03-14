@@ -10,8 +10,8 @@ export const CheckAppointmentAvailabilityStepper = (
   const timesParsed = JSON.parse(parsedOutput.output.replaceAll("```", ""));
 
   const array = timesParsed
-    .slice(1, -1) // Elimina los corchetes
-    .split(",") // Divide por comas
+    .slice(1, -1)
+    .split(",")
     .map((s: string) => s.trim().replace(/'/g, ""));
 
   const handleButtonClick = (selectedTime: string) => {

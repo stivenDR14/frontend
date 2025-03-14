@@ -76,7 +76,6 @@ export default function Home() {
     setShowGreeting(true);
     const timer = setTimeout(() => {
       setShowGreeting(false);
-      console.log("showGreeting", showGreeting);
     }, 5500);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps

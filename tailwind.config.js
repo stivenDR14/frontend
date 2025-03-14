@@ -1,5 +1,3 @@
-const { theme } = require("./src/utils/theme");
-
 module.exports = {
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
