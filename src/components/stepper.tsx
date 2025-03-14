@@ -83,10 +83,12 @@ export default function Stepper({
                     <button
                       className="bg-blue-500 text-white mx-2 px-2 py-2 rounded-md"
                       onClick={() => {
-                        //show a modal with the stepComponent
-                        setShowModal(true);
-                        setContentNameClicked(stepName);
-                        setContentOutput(item.output);
+                        if (item.done) {
+                          //show a modal with the stepComponent
+                          setShowModal(true);
+                          setContentNameClicked(stepName);
+                          setContentOutput(item.output);
+                        }
                       }}
                     ></button>
                   }
