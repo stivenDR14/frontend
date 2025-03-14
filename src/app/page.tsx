@@ -72,45 +72,54 @@ export default function Home() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const headerDiv = () => {
-    return (
-      <>
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl font-bold">SuperCar Assistant</h1>
-          <SessionSelector
-            sessionIds={sessionIds}
-            currentSessionId={sessionId}
-            onSelectSession={selectSessionId}
-            onAddNewSession={addNewSession}
-          />
-        </div>
-        {showGreeting && (
-          <div className="mb-4 p-3 bg-success-500/20 text-success-500 rounded animate-fade-in">
-            ¡Welcome again, {userName}!
-          </div>
-        )}
-      </>
-    );
-  };
+  const Header = () => (
+    <div className="flex justify-between items-center mb-4">
+      <h1 className="text-2xl font-bold w-full">SuperCar Assistant</h1>
+      <h2 className="text-sm text-gray-500">User selected:</h2>
+      <SessionSelector
+        sessionIds={sessionIds}
+        currentSessionId={sessionId}
+        onSelectSession={selectSessionId}
+        onAddNewSession={addNewSession}
+      />
+    </div>
+  );
 
   return (
-    <div className="flex flex-col h-screen max-w-xl mx-auto p-4">
-      {headerDiv()}
+    <div className="h-screen max-w-7xl mx-auto p-4 flex flex-col md:flex-row md:gap-6">
+      {/* Left column (mobile: entire screen in vertical order) */}
+      <div className="flex flex-col h-full md:w-2/3 order-1 md:order-1">
+        {/* In mobile: Header above, Chat in the middle, Input below */}
+        {/* In desktop: Header above, Input in the middle, Chat below */}
+        <div className="order-1">
+          <Header />
+        </div>
 
-      <InputErrorContainer
-        handleSubmit={handleSubmit}
-        query={query}
-        setQuery={setQuery}
-        isLoading={isLoading}
-        isStreaming={isStreaming}
-        error={error}
-      />
-      <ChatHistory
-        responseChunks={responseChunks}
-        toolUses={toolUses}
-        toolOutputs={toolOutputs}
-      />
-      <Stepper />
+        <div className="flex-1 overflow-auto order-2 md:order-3">
+          <ChatHistory
+            responseChunks={responseChunks}
+            toolUses={toolUses}
+            toolOutputs={toolOutputs}
+          />
+        </div>
+
+        <div className="mt-auto order-3 md:order-2 md:my-4 ">
+          <InputErrorContainer
+            handleSubmit={handleSubmit}
+            query={query}
+            setQuery={setQuery}
+            isLoading={isLoading}
+            isStreaming={isStreaming}
+            error={error}
+          />
+        </div>
+      </div>
+
+      {/* Right column just available in desktop */}
+      <div className="flex justify-center items-center md:w-1/3 order-2 md:order-2 mt-4 md:mt-0">
+        <Stepper showGreeting={showGreeting} userName={userName} />
+      </div>
+
       <SessionModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
