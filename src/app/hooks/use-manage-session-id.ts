@@ -21,62 +21,62 @@ export const useManageSessionId = (): UseManageSessionIdReturn => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [sessionIds, setSessionIds] = useState<string[]>([]);
 
-  // Inicializar al montar el componente
+  // Initialize the session id and user name
   useEffect(() => {
-    // Verificar si es la primera vez que el usuario visita la app
+    // Check if it's the first time the user visits the app
     const firstTimeUser = localStorage.getItem("first-time-user") === null;
     setIsFirstTimeUser(firstTimeUser);
 
-    // Si es la primera vez, mostrar el modal
+    // If it's the first time, show the modal
     if (firstTimeUser) {
       setShowModal(true);
       localStorage.setItem("first-time-user", "false");
     } else {
-      // Cargar sesiones guardadas
+      // Load saved sessions
       const savedSessions = localStorage.getItem("session-ids");
       const sessions = savedSessions ? JSON.parse(savedSessions) : [];
       setSessionIds(sessions);
 
-      // Usar la última sesión como predeterminada
+      // Use the last session as default
       if (sessions.length > 0) {
         setSessionId(sessions[0]);
-        // Extraer el nombre de usuario del ID de sesión
+        // Extract the user name from the session id
         const namePart = sessions[0].split("-")[0];
         setUserName(namePart);
       } else {
-        // Si no hay sesiones guardadas (caso raro), mostrar el modal
+        // If there are no saved sessions (rare case), show the modal
         setShowModal(true);
       }
     }
   }, []);
 
-  // Manejar el envío del nombre
+  // Handle the name submission
   const handleNameSubmit = (name: string) => {
     if (!name.trim()) return;
 
-    // Crear un nuevo ID de sesión con el nombre y un sufijo aleatorio
+    // Create a new session id with the name and a random suffix
     const newSessionId = `${name}-${Math.random().toString(36).substring(7)}`;
 
-    // Actualizar el estado
+    // Update the state
     setSessionId(newSessionId);
     setUserName(name);
     setShowModal(false);
 
-    // Guardar en localStorage
+    // Save in localStorage
     const updatedSessions = [newSessionId, ...sessionIds];
     setSessionIds(updatedSessions);
     localStorage.setItem("session-ids", JSON.stringify(updatedSessions));
   };
 
-  // Seleccionar un ID de sesión existente
+  // Select an existing session id
   const selectSessionId = (id: string) => {
     setSessionId(id);
-    // Extraer el nombre de usuario del ID de sesión
+    // Extract the user name from the session id
     const namePart = id.split("-")[0];
     setUserName(namePart);
   };
 
-  // Añadir una nueva sesión
+  // Add a new session
   const addNewSession = () => {
     setShowModal(true);
   };

@@ -18,7 +18,7 @@ export default function SessionSelector({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Cerrar el dropdown cuando se hace clic fuera de él
+  // Close the dropdown when clicking outside of it
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -35,7 +35,7 @@ export default function SessionSelector({
     };
   }, []);
 
-  // Extraer el nombre de usuario del ID de sesión
+  // Extract the user name from the session id
   const getUserNameFromSessionId = (id: string) => {
     return id.split("-")[0];
   };
