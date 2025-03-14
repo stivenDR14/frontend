@@ -2,9 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { UseRealtimeChat } from "./hooks/use-realtime-chat.hook";
+import SessionSelector from "@/components/session-selector";
+import { useManageSessionId } from "./hooks/use-manage-session-id";
+import SessionModal from "@/components/session-modal";
+import InputErrorContainer from "@/components/input-error-container";
+import ChatHistory from "@/components/chat-history";
+import Stepper from "@/components/stepper";
 
 export default function Home() {
-  const sessionId = "user-" + Math.random().toString(36).substring(7);
   const [query, setQuery] = useState("");
   const [responseChunks, setResponseChunks] = useState<string>("");
   const [toolUses, setToolUses] = useState<string[]>([]);
@@ -12,6 +17,19 @@ export default function Home() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [toolOutputs, setToolOutputs] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showGreeting, setShowGreeting] = useState(false);
+
+  const {
+    sessionId,
+    userName,
+    isFirstTimeUser,
+    showModal,
+    sessionIds,
+    setShowModal,
+    handleNameSubmit,
+    selectSessionId,
+    addNewSession,
+  } = useManageSessionId();
 
   const { connect } = UseRealtimeChat(
     setError,
@@ -27,90 +45,87 @@ export default function Home() {
     e.preventDefault();
     if (!query.trim()) return;
 
-    // Resetear estados
+    // reset the states
     setIsLoading(true);
     setResponseChunks("");
     setToolUses([]);
     setToolOutputs([]);
     setError(null);
 
-    // Conectar al servidor
     connect();
   };
 
-  // Actualizar estado de carga cuando finaliza streaming
+  // update the loading state when the streaming is finished
   useEffect(() => {
     if (!isStreaming && isLoading) {
       setIsLoading(false);
     }
   }, [isStreaming, isLoading]);
 
+  useEffect(() => {
+    setShowGreeting(true);
+    const timer = setTimeout(() => {
+      setShowGreeting(false);
+      console.log("showGreeting", showGreeting);
+    }, 5500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const Header = () => (
+    <div className="flex justify-between items-center mb-4">
+      <h1 className="text-2xl font-bold w-full">SuperCar Assistant</h1>
+      <h2 className="text-sm text-gray-500">User selected:</h2>
+      <SessionSelector
+        sessionIds={sessionIds}
+        currentSessionId={sessionId}
+        onSelectSession={selectSessionId}
+        onAddNewSession={addNewSession}
+      />
+    </div>
+  );
+
   return (
-    <div className="flex flex-col h-screen max-w-xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">SuperCar Assistant</h1>
+    <div className="h-screen max-w-7xl mx-auto p-4 flex flex-col md:flex-row md:gap-6">
+      {/* Left column (mobile: entire screen in vertical order) */}
+      <div className="flex flex-col h-full md:w-2/3 order-1 md:order-1">
+        {/* In mobile: Header above, Chat in the middle, Input below */}
+        {/* In desktop: Header above, Input in the middle, Chat below */}
+        <div className="order-1">
+          <Header />
+        </div>
 
-      <form onSubmit={handleSubmit} className="mb-4">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ask me anything about cars..."
-            className="flex-1 p-2 border rounded"
+        <div className="flex-1 overflow-auto order-2 md:order-3">
+          <ChatHistory
+            responseChunks={responseChunks}
+            toolUses={toolUses}
+            toolOutputs={toolOutputs}
           />
-          <button
-            type="submit"
-            disabled={isLoading || isStreaming}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
-          >
-            {isLoading ? "Sending..." : isStreaming ? "Receiving..." : "Send"}
-          </button>
         </div>
-      </form>
 
-      {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-800 rounded">
-          Error: {error}
+        <div className="mt-auto order-3 md:order-2 md:my-4 ">
+          <InputErrorContainer
+            handleSubmit={handleSubmit}
+            query={query}
+            setQuery={setQuery}
+            isLoading={isLoading}
+            isStreaming={isStreaming}
+            error={error}
+          />
         </div>
-      )}
-
-      <div className="flex-1 overflow-auto border rounded p-4">
-        {responseChunks !== "" ? (
-          <div className="mb-4">{responseChunks}</div>
-        ) : (
-          <p className="text-gray-400 mb-4">Ask a question to get started.</p>
-        )}
-
-        {/* Show tools used */}
-        {toolUses.length > 0 && (
-          <div className="mt-4 p-3 bg-gray-700 rounded">
-            <h3 className="font-bold mb-2">Tools Used:</h3>
-            <ul className="list-disc pl-5">
-              {toolUses.map((tool, index) => (
-                <li key={`tool-${index}`} className="mb-1">
-                  {tool}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Show tool results */}
-        {toolOutputs.length > 0 && (
-          <div className="mt-4 p-3 bg-gray-700 rounded">
-            <h3 className="font-bold mb-2">Tool Results:</h3>
-            <ul className="list-disc pl-5">
-              {toolOutputs.map((output, index) => (
-                <li key={`output-${index}`} className="mb-1">
-                  {typeof output === "string" && output.startsWith("{")
-                    ? JSON.parse(output).output
-                    : output}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
       </div>
+
+      {/* Right column just available in desktop */}
+      <div className="flex justify-center items-center md:w-1/3 order-2 md:order-2 mt-4 md:mt-0">
+        <Stepper showGreeting={showGreeting} userName={userName} />
+      </div>
+
+      <SessionModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={handleNameSubmit}
+        isFirstTime={isFirstTimeUser}
+      />
     </div>
   );
 }
