@@ -61,7 +61,7 @@ export default function Home() {
           <button
             type="submit"
             disabled={isLoading || isStreaming}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:bg-gray-400"
+            className="bg-primary-500 dark:bg-secondary-700 text-white px-4 py-2 rounded hover:bg-primary-600 dark:hover:bg-secondary-600 disabled:bg-secondary-400 dark:disabled:bg-secondary-800 transition-colors"
           >
             {isLoading ? "Sending..." : isStreaming ? "Receiving..." : "Send"}
           </button>
@@ -69,7 +69,7 @@ export default function Home() {
       </form>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-800 rounded">
+        <div className="mb-4 p-3 bg-error-500/20 text-error-500 rounded">
           Error: {error}
         </div>
       )}
@@ -78,12 +78,14 @@ export default function Home() {
         {responseChunks !== "" ? (
           <div className="mb-4">{responseChunks}</div>
         ) : (
-          <p className="text-gray-400 mb-4">Ask a question to get started.</p>
+          <p className="text-secondary-500 mb-4">
+            Ask a question to get started.
+          </p>
         )}
 
         {/* Show tools used */}
         {toolUses.length > 0 && (
-          <div className="mt-4 p-3 bg-gray-700 rounded">
+          <div className="mt-4 p-3 bg-secondary-800 rounded">
             <h3 className="font-bold mb-2">Tools Used:</h3>
             <ul className="list-disc pl-5">
               {toolUses.map((tool, index) => (
@@ -97,7 +99,7 @@ export default function Home() {
 
         {/* Show tool results */}
         {toolOutputs.length > 0 && (
-          <div className="mt-4 p-3 bg-gray-700 rounded">
+          <div className="mt-4 p-3 bg-secondary-800 rounded">
             <h3 className="font-bold mb-2">Tool Results:</h3>
             <ul className="list-disc pl-5">
               {toolOutputs.map((output, index) => (

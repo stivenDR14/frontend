@@ -3,6 +3,13 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Add theme color variables */
+  --color-primary: #0072f5;
+  --color-secondary: #808080;
+  --color-success: #17c964;
+  --color-warning: #f5a524;
+  --color-error: #f31260;
 }
 
 @theme inline {
@@ -12,11 +19,21 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Dark mode styles will be applied when the .dark class is present */
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+
+  /* Adjust theme colors for dark mode */
+  --color-primary: #338ef7;
+}
+
+.light {
+  --background: #ffffff;
+  --foreground: #171717;
+
+  /* Adjust theme colors for light mode */
+  --color-primary: #0072f5;
 }
 
 body {
