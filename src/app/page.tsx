@@ -2,9 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { UseRealtimeChat } from "./hooks/use-realtime-chat.hook";
+import SessionSelector from "@/components/session-selector";
+import { useManageSessionId } from "./hooks/use-manage-session-id";
+import SessionModal from "@/components/session-modal";
+import InputErrorContainer from "@/components/input-error-container";
+import ChatHistory from "@/components/chat-history";
+import Stepper from "@/components/stepper";
 
 export default function Home() {
-  const sessionId = "user-" + Math.random().toString(36).substring(7);
   const [query, setQuery] = useState("");
   const [responseChunks, setResponseChunks] = useState<string>("");
   const [toolUses, setToolUses] = useState<string[]>([]);
@@ -12,6 +17,19 @@ export default function Home() {
   const [isStreaming, setIsStreaming] = useState(false);
   const [toolOutputs, setToolOutputs] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showGreeting, setShowGreeting] = useState(false);
+
+  const {
+    sessionId,
+    userName,
+    isFirstTimeUser,
+    showModal,
+    sessionIds,
+    setShowModal,
+    handleNameSubmit,
+    selectSessionId,
+    addNewSession,
+  } = useManageSessionId();
 
   const { connect } = UseRealtimeChat(
     setError,
@@ -27,92 +45,78 @@ export default function Home() {
     e.preventDefault();
     if (!query.trim()) return;
 
-    // Resetear estados
+    // reset the states
     setIsLoading(true);
     setResponseChunks("");
     setToolUses([]);
     setToolOutputs([]);
     setError(null);
 
-    // Conectar al servidor
     connect();
   };
 
-  // Actualizar estado de carga cuando finaliza streaming
+  // update the loading state when the streaming is finished
   useEffect(() => {
     if (!isStreaming && isLoading) {
       setIsLoading(false);
     }
   }, [isStreaming, isLoading]);
 
+  useEffect(() => {
+    setShowGreeting(true);
+    const timer = setTimeout(() => {
+      setShowGreeting(false);
+      console.log("showGreeting", showGreeting);
+    }, 5500);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const headerDiv = () => {
+    return (
+      <>
+        <div className="flex justify-between items-center mb-4">
+          <h1 className="text-2xl font-bold">SuperCar Assistant</h1>
+          <SessionSelector
+            sessionIds={sessionIds}
+            currentSessionId={sessionId}
+            onSelectSession={selectSessionId}
+            onAddNewSession={addNewSession}
+          />
+        </div>
+        {showGreeting && (
+          <div className="mb-4 p-3 bg-success-500/20 text-success-500 rounded animate-fade-in">
+            ¡Welcome again, {userName}!
+          </div>
+        )}
+      </>
+    );
+  };
+
   return (
     <div className="flex flex-col h-screen max-w-xl mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">SuperCar Assistant</h1>
+      {headerDiv()}
 
-      <form onSubmit={handleSubmit} className="mb-4">
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ask me anything about cars..."
-            className="flex-1 p-2 border rounded"
-          />
-          <button
-            type="submit"
-            disabled={isLoading || isStreaming}
-            className="bg-primary-500 dark:bg-secondary-700 text-white px-4 py-2 rounded hover:bg-primary-600 dark:hover:bg-secondary-600 disabled:bg-secondary-400 dark:disabled:bg-secondary-800 transition-colors"
-          >
-            {isLoading ? "Sending..." : isStreaming ? "Receiving..." : "Send"}
-          </button>
-        </div>
-      </form>
-
-      {error && (
-        <div className="mb-4 p-3 bg-error-500/20 text-error-500 rounded">
-          Error: {error}
-        </div>
-      )}
-
-      <div className="flex-1 overflow-auto border rounded p-4">
-        {responseChunks !== "" ? (
-          <div className="mb-4">{responseChunks}</div>
-        ) : (
-          <p className="text-secondary-500 mb-4">
-            Ask a question to get started.
-          </p>
-        )}
-
-        {/* Show tools used */}
-        {toolUses.length > 0 && (
-          <div className="mt-4 p-3 bg-secondary-800 rounded">
-            <h3 className="font-bold mb-2">Tools Used:</h3>
-            <ul className="list-disc pl-5">
-              {toolUses.map((tool, index) => (
-                <li key={`tool-${index}`} className="mb-1">
-                  {tool}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Show tool results */}
-        {toolOutputs.length > 0 && (
-          <div className="mt-4 p-3 bg-secondary-800 rounded">
-            <h3 className="font-bold mb-2">Tool Results:</h3>
-            <ul className="list-disc pl-5">
-              {toolOutputs.map((output, index) => (
-                <li key={`output-${index}`} className="mb-1">
-                  {typeof output === "string" && output.startsWith("{")
-                    ? JSON.parse(output).output
-                    : output}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-      </div>
+      <InputErrorContainer
+        handleSubmit={handleSubmit}
+        query={query}
+        setQuery={setQuery}
+        isLoading={isLoading}
+        isStreaming={isStreaming}
+        error={error}
+      />
+      <ChatHistory
+        responseChunks={responseChunks}
+        toolUses={toolUses}
+        toolOutputs={toolOutputs}
+      />
+      <Stepper />
+      <SessionModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSubmit={handleNameSubmit}
+        isFirstTime={isFirstTimeUser}
+      />
     </div>
   );
 }

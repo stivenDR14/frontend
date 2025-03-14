@@ -94,8 +94,10 @@ export const UseRealtimeChat = (
       // Check the readyState to determine the type of error
       if (eventSource.readyState === EventSource.CONNECTING) {
         console.log("Connection is being established...");
+        setError("Connection lost or failed to establish");
       } else if (eventSource.readyState === EventSource.OPEN) {
         console.log("Connection is open but an error occurred");
+        setError("Connection lost or failed to establish");
       } else if (eventSource.readyState === EventSource.CLOSED) {
         console.log("Connection was closed due to an error");
         setIsStreaming(false);
@@ -117,6 +119,9 @@ export const UseRealtimeChat = (
           type: errorEvent.type,
         });
       }
+
+      setIsStreaming(false);
+      eventSource.close();
     };
   };
 
