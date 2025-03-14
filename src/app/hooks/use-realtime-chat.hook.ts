@@ -25,12 +25,12 @@ export const UseRealtimeChat = (
     const eventSource = new EventSource(url);
     eventSourceRef.current = eventSource;
 
-    // Agregar listener específico para cada tipo de evento
+    // Add event listeners for each type of event
     eventSource.addEventListener("chunk", (event) => {
       console.log("Chunk event received:", event.data);
       try {
         const content = event.data;
-        // Actualizar el estado con el nuevo chunk
+        // Update the state with the new chunk
         if (content) {
           setResponseChunks((prev) => prev + content.replace(/[\r\n\t]/g, ""));
         }
@@ -91,7 +91,7 @@ export const UseRealtimeChat = (
     eventSource.onerror = (errorEvent) => {
       console.error("EventSource error:", errorEvent);
 
-      // Verificar el estado de readyState para determinar el tipo de error
+      // Check the readyState to determine the type of error
       if (eventSource.readyState === EventSource.CONNECTING) {
         console.log("Connection is being established...");
       } else if (eventSource.readyState === EventSource.OPEN) {
@@ -102,7 +102,7 @@ export const UseRealtimeChat = (
         setError("Connection lost or failed to establish");
       }
 
-      // Intentar obtener más información sobre el error
+      // Try to get more information about the error
       if (errorEvent instanceof Event) {
         console.log("Error event properties:", {
           bubbles: errorEvent.bubbles,
