@@ -21,7 +21,7 @@ export default function InputErrorContainer({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ask me anything about cars..."
+            placeholder="Ask here..."
             className="flex-1 p-2 border rounded"
           />
           <button

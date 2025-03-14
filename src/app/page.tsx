@@ -8,6 +8,7 @@ import SessionModal from "@/components/session-modal";
 import InputErrorContainer from "@/components/input-error-container";
 import ChatHistory from "@/components/chat-history";
 import Stepper from "@/components/stepper";
+import { ChatSteps } from "./models";
 
 export default function Home() {
   const [query, setQuery] = useState("");
@@ -18,6 +19,13 @@ export default function Home() {
   const [toolOutputs, setToolOutputs] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [showGreeting, setShowGreeting] = useState(false);
+  const [entireQuery, setEntireQuery] = useState<string>("");
+  const [steps, setSteps] = useState<ChatSteps>({
+    get_weather: { done: false, output: "" },
+    get_dealership_address: { done: false, output: "" },
+    check_appointment_availability: { done: false, output: "" },
+    schedule_appointment: { done: false, output: "" },
+  });
 
   const {
     sessionId,
@@ -51,7 +59,7 @@ export default function Home() {
     setToolUses([]);
     setToolOutputs([]);
     setError(null);
-
+    setEntireQuery(query);
     connect();
   };
 
@@ -59,6 +67,8 @@ export default function Home() {
   useEffect(() => {
     if (!isStreaming && isLoading) {
       setIsLoading(false);
+      //empty the input
+      setQuery("");
     }
   }, [isStreaming, isLoading]);
 
@@ -97,9 +107,26 @@ export default function Home() {
 
         <div className="flex-1 overflow-auto order-2 md:order-3">
           <ChatHistory
+            userMessage={entireQuery}
             responseChunks={responseChunks}
             toolUses={toolUses}
             toolOutputs={toolOutputs}
+            sessionId={sessionId}
+            isStreaming={isStreaming}
+            setSteps={setSteps}
+            submitInput={(subquery: string) => {
+              const newQuery = `Could be at ${subquery}`;
+              setQuery(newQuery);
+              // reset the states
+              setIsLoading(true);
+              setResponseChunks("");
+              setToolUses([]);
+              setToolOutputs([]);
+              setError(null);
+              setEntireQuery(newQuery);
+              connect();
+            }}
+            steps={steps}
           />
         </div>
 
@@ -117,7 +144,11 @@ export default function Home() {
 
       {/* Right column just available in desktop */}
       <div className="flex justify-center items-center md:w-1/3 order-2 md:order-2 mt-4 md:mt-0">
-        <Stepper showGreeting={showGreeting} userName={userName} />
+        <Stepper
+          showGreeting={showGreeting}
+          userName={userName}
+          steps={steps}
+        />
       </div>
 
       <SessionModal
