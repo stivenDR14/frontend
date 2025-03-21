@@ -1,21 +1,67 @@
 @import "tailwindcss";
+@import "tw-animate-css";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --background-dark: #171717;
+  --background-dark-medium: #232323;
+  --foreground-dark: #f0f0f0;
+  --background-light: #f0f0f0;
+  --background-light-medium: #e2e2e2;
+  --foreground-light: #171717;
+  --primary-dark: oklch(0.278 0.033 256.848);
+  --secondary-dark: oklch(0.456 0.124 284.308);
+  --primary-light: oklch(0.9 0.05 256.848);
+  --secondary-light: oklch(0.6 0.1 284.308);
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --transition-duration: 0.3s;
+
+  --radius: 0.625rem;
+}
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-background-dark: var(--background-dark);
+  --color-foreground-dark: var(--foreground-dark);
+  --color-background-light: var(--background-light);
+  --color-foreground-light: var(--foreground-light);
+  --color-primary-dark: var(--primary-dark);
+  --color-secondary-dark: var(--secondary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-secondary-light: var(--secondary-light);
+  --color-text-primary-dark: var(--foreground-dark);
+  --color-text-secondary-dark: var(--secondary-dark);
+  --color-text-primary-light: var(--foreground-light);
+  --color-text-secondary-light: var(--secondary-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  transition: color var(--transition-duration) ease,
+    background-color var(--transition-duration) ease;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  transition: background-color var(--transition-duration) ease,
+    color var(--transition-duration) ease;
+}
+
+button,
+a,
+input,
+textarea,
+.bg-gray-200,
+.bg-gray-700,
+.bg-blue-500,
+.bg-green-500,
+.text-white,
+.text-gray-500,
+.border,
+.shadow-lg {
+  transition: background-color var(--transition-duration) ease,
+    color var(--transition-duration) ease,
+    border-color var(--transition-duration) ease,
+    box-shadow var(--transition-duration) ease;
 }
 
 @keyframes fadeIn {
@@ -42,4 +88,63 @@ body {
 
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards, fadeOut 0.5s ease-in forwards 4.7s;
+}
+
+@keyframes wave {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }

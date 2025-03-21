@@ -2,20 +2,45 @@
 {"output": "5th Avenue, New York", "name": "get_dealership_address"}
 */
 
-import Image from "next/image";
+import { Location } from "@/app/constants/svg";
 
-export const DealershipAddressStepper = (output: string) => {
+export const DealershipAddressStepper = (
+  isStepper: boolean,
+  output: string
+) => {
   const parsedOutput = JSON.parse(output);
+
+  // Separar la dirección en ciudad y calle
+  const addressParts = parsedOutput.output.split(",");
+  const street = addressParts[0]?.trim() || "";
+  const city = addressParts[1]?.trim() || "";
+
   return (
-    <div className="flex justify-between items-center bg-gray-600 p-4 md:w-1/2 xs:w-full mx-4">
-      <div className="flex justify-center items-center w-2/5">
-        <Image src="/location.svg" alt="Location" width={100} height={100} />
+    <div
+      className={`rounded-md shadow-lg bg-background-light dark:bg-primary-light p-4 max-h-64 overflow-y-auto ${
+        isStepper ? "md:w-3/4 xs:w-full mx-4" : "w-full mb-2"
+      } flex flex-col md:flex-row items-center`}
+    >
+      <div className="flex-column md:w-2/4 xs:w-2/4 text-foreground-light dark:text-background-dark">
+        <h3 className="text-xl font-bold mb-2">Dealership Location</h3>
+        <div className="flex justify-center items-center w-full md:w-3/5 mb-4 md:mb-0">
+          <Location />
+        </div>
       </div>
-      <div className="rounded-md shadow-md flex-1 mr-4">
-        <h3 className="text-lg font-bold">City</h3>
-        <p className="text-sm">{parsedOutput.output.split(",")[0]}</p>
-        <h3 className="text-lg font-bold">Address</h3>
-        <p className="text-sm">{parsedOutput.output.split(",")[1]}</p>
+      {/* divisor line */}
+      <div className="w-4 h-full bg-foreground-light dark:bg-foreground-dark"></div>
+
+      <div className=" text-foreground-light dark:text-background-dark">
+        <div className="space-y-2">
+          <div>
+            <h4 className="text-md font-semibold">Street</h4>
+            <p className="text-md">{street}</p>
+          </div>
+          <div>
+            <h4 className="text-md font-semibold">City</h4>
+            <p className="text-md">{city}</p>
+          </div>
+        </div>
       </div>
     </div>
   );

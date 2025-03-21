@@ -3,7 +3,8 @@ import { ScheduleAppointmentStepper } from "./stepps/schedule_appointment.steppe
 import { CheckAppointmentAvailabilityStepper } from "./stepps/check-appointment-availability.stepper";
 import { WeatherStepper } from "./stepps/weather.stepper";
 import { DealershipAddressStepper } from "./stepps/dealership-address.stepper";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import RequestPrompt from "@/app/constants/prompts";
 
 export const STEP_COMPONENTS = {
   get_weather: WeatherStepper,
@@ -14,125 +15,129 @@ export const STEP_COMPONENTS = {
 
 export default function Stepper({
   showGreeting,
+  isLoading,
+  isStreaming,
   userName,
   steps,
+  submitInput,
 }: {
   showGreeting: boolean;
+  isLoading: boolean;
+  isStreaming: boolean;
   userName: string;
   steps: ChatSteps;
+  submitInput: (input: string) => void;
 }) {
-  const [showModal, setShowModal] = useState(false);
-  const [contentNameClicked, setContentNameClicked] = useState("");
-  const [contentOutput, setContentOutput] = useState("");
+  const [stepHeights, setStepHeights] = useState<Record<string, number>>({});
 
-  const modalContent = () => {
-    return STEP_COMPONENTS[contentNameClicked as keyof typeof STEP_COMPONENTS](
-      contentOutput,
-      () => {}
-    );
-  };
+  const stepRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  useEffect(() => {
+    const heights: Record<string, number> = {};
+
+    Object.keys(steps).forEach((stepName) => {
+      if (stepRefs.current[stepName]) {
+        heights[stepName] = stepRefs.current[stepName]?.clientHeight || 0;
+      }
+    });
+
+    setStepHeights(heights);
+  }, [steps]);
+
   return (
     <div className="stepper relative">
       {showGreeting && (
-        <div className="mx-auto w-full p-3 bg-green-100 text-green-600 rounded animate-fade-in mb-4">
+        <div className="mx-auto w-full p-3 bg-primary-dark dark:bg-primary-light text-background-light dark:text-background-dark rounded animate-fade-in my-4">
           ¡Welcome again, {userName}!
         </div>
       )}
-
-      {/* Mobile version */}
-      <div className="flex md:hidden justify-center gap-4">
-        {Object.entries(steps).map(([stepName, item]) => (
-          <div
-            key={stepName}
-            className="step relative flex flex-col items-center"
-          >
-            {item.done ? (
-              <button
-                className="bg-blue-500 text-white mx-2 px-2 py-2 rounded-md"
-                onClick={() => {
-                  //show a modal with the stepComponent
-                  setShowModal(true);
-                  setContentNameClicked(stepName);
-                  setContentOutput(item.output);
-                }}
-              >
-                <span className="text-sm text-white">✓</span>
-              </button>
-            ) : (
-              <div className="w-6 h-6 rounded-full border-2 border-gray-400"></div>
-            )}
-            <p className="text-xs text-center mt-1">
-              {stepName
-                .split("_")
-                .join(" ")
-                .replace(/\b\w/g, (char) => char.toUpperCase())}
-            </p>
-          </div>
-        ))}
+      <div className="mx-auto w-full p-3 bg-primary-dark dark:bg-primary-light text-background-light dark:text-background-dark rounded mb-8">
+        Hey <b>{userName}</b>!
+        <br />
+        <br />
+        It&apos;s time for you <b>schedule</b> your appointment!
+        <br />
+        Let&apos;s get started! There are some steps you need to follow for
+        scheduling your <b>test drive</b>:
       </div>
-
       {/* Desktop version */}
-      <div className="hidden md:block mt-4">
+      <div className="mt-4">
         {Object.entries(steps).map(([stepName, item], index) => {
           return (
-            <div key={stepName} className="relative">
-              <div className="flex items-start mb-8">
+            <div
+              key={stepName}
+              className={item.done ? "relative" : "mb-8 relative"}
+            >
+              <div className="flex">
                 <div className="relative">
-                  {/* call the StepCpmponent, but scale it to 64px */}
-                  {
-                    <button
-                      className="bg-blue-500 text-white mx-2 px-2 py-2 rounded-md"
-                      onClick={() => {
-                        if (item.done) {
-                          //show a modal with the stepComponent
-                          setShowModal(true);
-                          setContentNameClicked(stepName);
-                          setContentOutput(item.output);
-                        }
-                      }}
-                    ></button>
-                  }
-                  {item.done && (
-                    <span className="absolute top-3 right-0 bg-green-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                      ✓
-                    </span>
-                  )}
+                  <div className="w-16 h-16 rounded-full bg-primary-dark dark:bg-foreground-dark border-2 border-foreground-light dark:border-foreground-dark flex items-center justify-center">
+                    {item.done && (
+                      <span className="absolute top-4 right-4 bg-primary-light dark:bg-primary-dark text-foreground-light dark:text-foreground-dark text-xs rounded-full w-8 h-8 flex items-center justify-center">
+                        ✓
+                      </span>
+                    )}
 
-                  {/* Connector line (except for the last element) */}
-                  {index < Object.keys(steps).length - 1 && (
-                    <div className="absolute top-8 left-1/2 w-0.5 h-8 bg-gray-300 -ml-px"></div>
-                  )}
+                    {/* Connector line (except for the last element) */}
+                    {index < Object.keys(steps).length - 1 && (
+                      <div
+                        className="absolute left-1/2 w-0.5 bg-foreground-light dark:bg-foreground-dark -ml-px"
+                        style={{
+                          top: "64px", // Altura del círculo
+                          height: `${Math.max(
+                            stepHeights[stepName] - 64,
+                            32
+                          )}px`, // Altura dinámica basada en el contenido
+                        }}
+                      ></div>
+                    )}
+                  </div>
                 </div>
 
-                <div className="ml-4">
-                  <h3 className="font-medium">
-                    {item.done ? "Completed" : "Pending"}
-                  </h3>
-                  <p className="text-sm text-gray-500">
-                    {stepName
-                      .split("_")
-                      .join(" ")
-                      .replace(/\b\w/g, (char) => char.toUpperCase())}
-                  </p>
+                <div
+                  className="ml-4"
+                  ref={(el) => {
+                    stepRefs.current[stepName] = el;
+                  }}
+                >
+                  {item.done ? (
+                    <div className="p-2 rounded-md">
+                      {STEP_COMPONENTS[
+                        stepName as keyof typeof STEP_COMPONENTS
+                      ](true, item.output, (data) => {
+                        if (stepName === "check_appointment_availability") {
+                          submitInput(
+                            `For tomorrow at ${data} would be nice to have a reservation`
+                          );
+                        }
+                      })}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        if (!isLoading && !isStreaming) {
+                          submitInput(
+                            RequestPrompt[
+                              stepName as keyof typeof RequestPrompt
+                            ]
+                          );
+                        }
+                      }}
+                      className="bg-secondary-light dark:bg-secondary-dark hover:bg-primary-light dark:hover:bg-primary-dark px-2 py-1 rounded-md shadow-lg mt-4"
+                    >
+                      <p className="text-sm text-foreground-dark dark:text-foreground-dark">
+                        {stepName
+                          .split("_")
+                          .join(" ")
+                          .replace(/\b\w/g, (char) => char.toUpperCase())}
+                      </p>
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           );
         })}
       </div>
-      {showModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-secondary-800 rounded-lg p-6 w-full max-w-md">
-            <button
-              className="absolute top-8 right-8 text-gray-500 hover:text-gray-700"
-              onClick={() => setShowModal(false)}
-            >
-              <span className="text-6xl text-white">&times;</span>
-            </button>
-            {modalContent()}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
