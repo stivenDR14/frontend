@@ -2,6 +2,7 @@ import { useChatHistory } from "@/app/hooks/use-chat-history";
 import { ChatSteps } from "@/app/models";
 import { useEffect, useState, Dispatch, SetStateAction } from "react";
 import { STEP_COMPONENTS } from "./stepper";
+import { BotAvatar, UserAvatar } from "@/app/constants/svg";
 
 export default function ChatHistory({
   responseChunks,
@@ -75,7 +76,7 @@ export default function ChatHistory({
   }, [JSON.stringify(chatHistory)]);
 
   return (
-    <div className="h-19/20 overflow-auto border rounded p-4 pb-16">
+    <div className="h-99/100 overflow-auto border rounded p-4 pb-16 border-foreground-light dark:border-foreground-dark">
       {/* Show chat history */}
       {displayedMessages.length > 0 ? (
         <div className="flex flex-col space-y-4">
@@ -89,13 +90,19 @@ export default function ChatHistory({
               }
               className={`flex ${
                 message.type === "user" ? "justify-end" : "justify-start"
-              }`}
+              } items-end`}
             >
+              {message.type === "assistant" && (
+                <div className="w-8 h-8 rounded-full bg-background-light dark:bg-background-dark flex items-center justify-center text-foreground-light dark:text-foreground-dark flex-shrink-0 mr-2">
+                  <BotAvatar />
+                </div>
+              )}
+
               <div
                 className={`max-w-[80%] rounded-lg p-3 ${
                   message.type === "user"
-                    ? "bg-blue-500 text-white rounded-br-none"
-                    : "bg-gray-200 dark:bg-gray-700 dark:text-white rounded-bl-none"
+                    ? "bg-secondary-light dark:bg-secondary-dark text-foreground-dark dark:text-foreground-dark rounded-br-none mb-4 mr-1"
+                    : "bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark rounded-bl-none mb-4"
                 }`}
               >
                 <div className="whitespace-pre-wrap">
@@ -113,7 +120,7 @@ export default function ChatHistory({
                   message.tool_by_assistant_name &&
                   message.tool_by_assistant_name.length > 0 && (
                     <div className="mt-2 flex-column items-center">
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
+                      <span className="inline-flex whitespace-normal break-words xs:max-w-[150px] md:max-w-[200px]  items-center px-2 py-1 text-xs font-small rounded-full bg-primary-light dark:bg-primary-dark text-foreground-light dark:text-foreground-dark mb-2">
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           className="h-3 w-3 mr-1"
@@ -126,20 +133,22 @@ export default function ChatHistory({
                             clipRule="evenodd"
                           />
                         </svg>
-                        {message.tool_by_assistant_name &&
-                          message.tool_by_assistant_name.map((tool, index) => {
-                            return (
-                              <div key={`tool-${index}`}>
-                                <span style={{ margin: "0 0.25rem 0 0.25rem" }}>
-                                  {tool}
-                                </span>
-                                {index <
-                                  (message.tool_by_assistant_name?.length ??
-                                    0) -
-                                    1 && "-"}
-                              </div>
-                            );
-                          })}
+                        <ul>
+                          {message.tool_by_assistant_name &&
+                            message.tool_by_assistant_name.map(
+                              (tool, index) => {
+                                return (
+                                  <li key={`tool-${index}`}>
+                                    <span
+                                      style={{ margin: "0 0.25rem 0 0.25rem" }}
+                                    >
+                                      {tool}
+                                    </span>
+                                  </li>
+                                );
+                              }
+                            )}
+                        </ul>
                       </span>
                       {message.tool_by_assistant_output &&
                         message.tool_by_assistant_name &&
@@ -155,6 +164,7 @@ export default function ChatHistory({
                             return (
                               <div key={`tool-description-${index}`}>
                                 {StepComponent(
+                                  false,
                                   output,
                                   (selectedTime: string) => {
                                     submitInput(selectedTime);
@@ -167,12 +177,20 @@ export default function ChatHistory({
                     </div>
                   )}
               </div>
+
+              {message.type === "user" && (
+                <div className="w-8 h-8 rounded-full bg-secondary-light dark:bg-secondary-dark flex items-center justify-center text-foreground-light dark:text-foreground-dark flex-shrink-0 mr-2">
+                  <UserAvatar />
+                </div>
+              )}
             </div>
           ))}
           {streamingMessage && (
-            <div className="flex justify-start">
-              <div className="bg-gray-200 dark:bg-gray-700 dark:text-white rounded-lg p-3">
+            <div className="flex justify-start items-end">
+              <BotAvatar />
+              <div className="bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark rounded-lg rounded-bl-none p-3 max-w-[80%]">
                 {streamingMessage}
+                <span className="inline-block ml-1 animate-pulse">▌</span>
               </div>
             </div>
           )}

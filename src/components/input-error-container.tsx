@@ -22,19 +22,20 @@ export default function InputErrorContainer({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Ask here..."
-            className="flex-1 p-2 border rounded"
+            autoFocus
+            className="w-full p-2 border rounded bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark border-foreground-light/20 dark:border-foreground-dark/20 focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
           />
           <button
             type="submit"
             disabled={isLoading || isStreaming}
-            className="bg-blue-500 bg-gray-700 text-white px-4 py-2 rounded hover:bg-blue-600 hover:bg-gray-600 disabled:bg-gray-400 disabled:bg-gray-800 transition-colors"
+            className="bg-secondary-light dark:bg-secondary-dark text-foreground-dark dark:text-foreground-dark px-4 py-2 rounded hover:bg-primary-light dark:hover:bg-primary-dark disabled:bg-secondary-light dark:disabled:bg-secondary-dark transition-colors"
           >
             {isLoading ? "Sending..." : isStreaming ? "Receiving..." : "Send"}
           </button>
         </div>
       </form>
       {error && (
-        <div className="mb-4 p-3 bg-red-100 text-red-600 rounded">
+        <div className="mb-4 p-3 bg-foreground-light dark:bg-foreground-dark text-background-light dark:text-background-dark rounded">
           Error: {error}
         </div>
       )}

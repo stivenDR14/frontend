@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
         session_id: sessionId,
       }),
     };
+
     // Create a new ReadableStream
     const stream = new ReadableStream({
       async start(controller) {
