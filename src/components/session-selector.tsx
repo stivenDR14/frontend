@@ -44,7 +44,7 @@ export default function SessionSelector({
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1 px-3 py-1 rounded hover:bg-gray-100 dark:hover:bg-secondary-700 transition-colors"
+        className="flex items-center gap-1 px-3 py-1 rounded hover:bg-secondary-light dark:hover:bg-secondary-dark transition-colors text-primary-dark dark:text-primary-light"
       >
         <span>{getUserNameFromSessionId(currentSessionId)}</span>
         <svg
@@ -63,7 +63,7 @@ export default function SessionSelector({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-secondary-800 rounded shadow-lg z-10 border dark:border-secondary-700">
+        <div className="absolute top-full left-0 mt-1 w-48 bg-primary-light dark:bg-primary-dark rounded shadow-lg z-10 border dark:border-secondary-700">
           <ul className="py-1">
             {sessionIds.map((id) => (
               <li key={id}>
@@ -72,10 +72,10 @@ export default function SessionSelector({
                     onSelectSession(id);
                     setIsOpen(false);
                   }}
-                  className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-secondary-700 transition-colors ${
+                  className={`w-full text-left px-4 py-2 hover:bg-secondary-light dark:hover:bg-secondary-dark  transition-colors ${
                     id === currentSessionId
-                      ? "bg-gray-100 dark:bg-secondary-700"
-                      : ""
+                      ? "text-background-light dark:text-background-dark"
+                      : "text-foreground-light dark:text-foreground-dark"
                   }`}
                 >
                   {getUserNameFromSessionId(id)}
@@ -88,7 +88,7 @@ export default function SessionSelector({
                   onAddNewSession();
                   setIsOpen(false);
                 }}
-                className="w-full text-left px-4 py-2 text-primary-500 hover:bg-gray-100 dark:hover:bg-secondary-700 transition-colors"
+                className="w-full text-left px-4 py-2 text-foreground-light dark:text-foreground-dark hover:bg-secondary-light dark:hover:bg-secondary-dark transition-colors"
               >
                 + Añadir nueva sesión
               </button>

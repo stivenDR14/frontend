@@ -1,21 +1,67 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --background-dark: #171717;
+  --background-dark-medium: #232323;
+  --foreground-dark: #f0f0f0;
+  --background-light: #f0f0f0;
+  --background-light-medium: #e2e2e2;
+  --foreground-light: #171717;
+  --primary-dark: oklch(0.278 0.033 256.848);
+  --secondary-dark: oklch(0.456 0.124 284.308);
+  --primary-light: oklch(0.9 0.05 256.848);
+  --secondary-light: oklch(0.6 0.1 284.308);
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --transition-duration: 0.3s;
+}
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-background-dark: var(--background-dark);
+  --color-foreground-dark: var(--foreground-dark);
+  --color-background-light: var(--background-light);
+  --color-foreground-light: var(--foreground-light);
+  --color-primary-dark: var(--primary-dark);
+  --color-secondary-dark: var(--secondary-dark);
+  --color-primary-light: var(--primary-light);
+  --color-secondary-light: var(--secondary-light);
+  --color-text-primary-dark: var(--foreground-dark);
+  --color-text-secondary-dark: var(--secondary-dark);
+  --color-text-primary-light: var(--foreground-light);
+  --color-text-secondary-light: var(--secondary-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+html {
+  transition: color var(--transition-duration) ease,
+    background-color var(--transition-duration) ease;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+  transition: background-color var(--transition-duration) ease,
+    color var(--transition-duration) ease;
+}
+
+button,
+a,
+input,
+textarea,
+.bg-gray-200,
+.bg-gray-700,
+.bg-blue-500,
+.bg-green-500,
+.text-white,
+.text-gray-500,
+.border,
+.shadow-lg {
+  transition: background-color var(--transition-duration) ease,
+    color var(--transition-duration) ease,
+    border-color var(--transition-duration) ease,
+    box-shadow var(--transition-duration) ease;
 }
 
 @keyframes fadeIn {
@@ -42,4 +88,16 @@ body {
 
 .animate-fade-in {
   animation: fadeIn 0.5s ease-out forwards, fadeOut 0.5s ease-in forwards 4.7s;
+}
+
+@keyframes wave {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }

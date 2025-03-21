@@ -4,11 +4,12 @@ import { useState, useEffect } from "react";
 import { UseRealtimeChat } from "./hooks/use-realtime-chat.hook";
 import SessionSelector from "@/components/session-selector";
 import { useManageSessionId } from "./hooks/use-manage-session-id";
-import SessionModal from "@/components/session-modal";
-import InputErrorContainer from "@/components/input-error-container";
-import ChatHistory from "@/components/chat-history";
+import SessionModal from "@/components/modals/session-modal";
 import Stepper from "@/components/stepper";
 import { ChatSteps } from "./models";
+import ThemeToggle from "@/components/theme-toggle";
+import ChatToggle from "@/components/chat-toogle";
+import ChatModal from "@/components/modals/chat-modal";
 
 export default function Home() {
   const [query, setQuery] = useState("");
@@ -26,6 +27,7 @@ export default function Home() {
     check_appointment_availability: { done: false, output: "" },
     schedule_appointment: { done: false, output: "" },
   });
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   const {
     sessionId,
@@ -63,6 +65,19 @@ export default function Home() {
     connect();
   };
 
+  const submitInput = (newQuery: string) => {
+    setIsChatOpen(true);
+    setQuery(newQuery);
+    // reset the states
+    setIsLoading(true);
+    setResponseChunks("");
+    setToolUses([]);
+    setToolOutputs([]);
+    setError(null);
+    setEntireQuery(newQuery);
+    connect();
+  };
+
   // update the loading state when the streaming is finished
   useEffect(() => {
     if (!isStreaming && isLoading) {
@@ -82,71 +97,38 @@ export default function Home() {
   }, []);
 
   const Header = () => (
-    <div className="flex justify-between items-center mb-4">
-      <h1 className="text-2xl font-bold w-full">SuperCar Assistant</h1>
-      <h2 className="text-sm text-gray-500">User selected:</h2>
-      <SessionSelector
-        sessionIds={sessionIds}
-        currentSessionId={sessionId}
-        onSelectSession={selectSessionId}
-        onAddNewSession={addNewSession}
-      />
+    <div className="flex justify-between items-center mb-4 gap-4">
+      <div>
+        {" "}
+        <h2 className="text-sm text-primary-dark dark:text-primary-light">
+          User selected:
+        </h2>
+        <SessionSelector
+          sessionIds={sessionIds}
+          currentSessionId={sessionId}
+          onSelectSession={selectSessionId}
+          onAddNewSession={addNewSession}
+        />
+      </div>
+
+      <h1 className="text-2xl font-bold text-primary-dark dark:text-primary-light ">
+        SuperCar Scheduler Platform
+      </h1>
+      <div className="flex justify-end">
+        <ThemeToggle />
+      </div>
     </div>
   );
 
   return (
-    <div className="h-screen max-w-7xl mx-auto p-4 flex flex-col md:flex-row md:gap-6">
-      {/* Left column (mobile: entire screen in vertical order) */}
-      <div className="flex flex-col h-full md:w-2/3 order-1 md:order-1">
-        {/* In mobile: Header above, Chat in the middle, Input below */}
-        {/* In desktop: Header above, Input in the middle, Chat below */}
-        <div className="order-1">
-          <Header />
-        </div>
-
-        <div className="flex-1 overflow-auto order-2 md:order-3">
-          <ChatHistory
-            userMessage={entireQuery}
-            responseChunks={responseChunks}
-            toolUses={toolUses}
-            toolOutputs={toolOutputs}
-            sessionId={sessionId}
-            isStreaming={isStreaming}
-            setSteps={setSteps}
-            submitInput={(subquery: string) => {
-              const newQuery = `Could be at ${subquery}`;
-              setQuery(newQuery);
-              // reset the states
-              setIsLoading(true);
-              setResponseChunks("");
-              setToolUses([]);
-              setToolOutputs([]);
-              setError(null);
-              setEntireQuery(newQuery);
-              connect();
-            }}
-            steps={steps}
-          />
-        </div>
-
-        <div className="mt-auto order-3 md:order-2 md:my-4 ">
-          <InputErrorContainer
-            handleSubmit={handleSubmit}
-            query={query}
-            setQuery={setQuery}
-            isLoading={isLoading}
-            isStreaming={isStreaming}
-            error={error}
-          />
-        </div>
-      </div>
-
-      {/* Right column just available in desktop */}
-      <div className="flex justify-center items-center md:w-1/3 order-2 md:order-2 mt-4 md:mt-0">
+    <div className="h-screen mx-auto p-4 flex flex-col  gap-6 ">
+      <Header />
+      <div className="flex justify-center items-center mt-4 mt-4">
         <Stepper
           showGreeting={showGreeting}
           userName={userName}
           steps={steps}
+          submitInput={submitInput}
         />
       </div>
 
@@ -156,6 +138,31 @@ export default function Home() {
         onSubmit={handleNameSubmit}
         isFirstTime={isFirstTimeUser}
       />
+      <ChatModal
+        isOpen={isChatOpen}
+        entireQuery={entireQuery}
+        responseChunks={responseChunks}
+        toolUses={toolUses}
+        toolOutputs={toolOutputs}
+        sessionId={sessionId}
+        isStreaming={isStreaming}
+        setSteps={setSteps}
+        setQuery={setQuery}
+        setIsLoading={setIsLoading}
+        setResponseChunks={setResponseChunks}
+        setToolUses={setToolUses}
+        setToolOutputs={setToolOutputs}
+        setError={setError}
+        setEntireQuery={setEntireQuery}
+        connect={connect}
+        steps={steps}
+        handleSubmit={handleSubmit}
+        query={query}
+        isLoading={isLoading}
+        error={error}
+        setIsOpen={setIsChatOpen}
+      />
+      <ChatToggle isOpen={isChatOpen} setIsOpen={setIsChatOpen} />
     </div>
   );
 }

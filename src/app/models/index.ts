@@ -31,3 +31,5 @@ export interface SessionChatData {
 export interface ChatHistoryStore {
   [sessionId: string]: SessionChatData;
 }
+
+export type ThemeMode = "light" | "dark";

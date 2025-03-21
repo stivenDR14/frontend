@@ -7,13 +7,7 @@ module.exports = {
   darkMode: "class",
   theme: {
     extend: {
-      colors: {
-        primary: theme.colors.primary,
-        secondary: theme.colors.secondary,
-        success: theme.colors.success,
-        warning: theme.colors.warning,
-        error: theme.colors.error,
-      },
+      colors: {},
       // You can extend other theme properties here
     },
   },
