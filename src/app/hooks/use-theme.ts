@@ -17,7 +17,6 @@ export const useTheme = () => {
 
   const handleToggleTheme = () => {
     const newTheme = toggleTheme(theme);
-    console.log("newTheme", newTheme);
     setTheme(newTheme);
     applyTheme(newTheme);
   };

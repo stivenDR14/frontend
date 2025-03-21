@@ -22,7 +22,8 @@ export default function InputErrorContainer({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Ask here..."
-            className="flex-1 p-2 border rounded border-foreground-light dark:border-foreground-dark text-foreground-light dark:text-foreground-dark"
+            autoFocus
+            className="w-full p-2 border rounded bg-background-light dark:bg-background-dark text-foreground-light dark:text-foreground-dark border-foreground-light/20 dark:border-foreground-dark/20 focus:outline-none focus:ring-2 focus:ring-primary-light dark:focus:ring-primary-dark"
           />
           <button
             type="submit"

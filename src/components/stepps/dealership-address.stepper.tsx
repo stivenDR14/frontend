@@ -17,7 +17,7 @@ export const DealershipAddressStepper = (
 
   return (
     <div
-      className={`rounded-md shadow-lg bg-background-light dark:bg-primary-light p-4 ${
+      className={`rounded-md shadow-lg bg-background-light dark:bg-primary-light p-4 max-h-64 overflow-y-auto ${
         isStepper ? "md:w-3/4 xs:w-full mx-4" : "w-full mb-2"
       } flex flex-col md:flex-row items-center`}
     >

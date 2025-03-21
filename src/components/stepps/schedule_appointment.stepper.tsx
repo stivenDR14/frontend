@@ -19,15 +19,15 @@ export const ScheduleAppointmentStepper = (
 
   return (
     <div
-      className={`bg-background-light dark:bg-primary-light p-4 rounded-md shadow-md mx-4 flex-column items-center md:w-3/4 xs:w-full ${
-        isStepper ? "md:w-4/5 xs:w-full" : "w-full mb-2"
+      className={`bg-background-light dark:bg-primary-light p-4 rounded-md shadow-md flex-column items-center max-h-64 overflow-y-auto ${
+        isStepper ? "md:w-4/5 xs:w-full mx-4" : "w-full mb-2"
       }`}
     >
-      <div className="flex flex-row items-center">
+      <div className="flex flex-row items-center text-foreground-light dark:text-background-dark">
         <div className="text-2xl mr-2">🎉</div>
         <h3 className="text-lg font-bold">Appointment Receipt</h3>
       </div>
-      <ul className="list-disc ml-4">
+      <ul className="list-disc ml-4 text-foreground-light dark:text-background-dark">
         <li>
           <b className="text-sm">Confirmation ID:</b>
           <p className="text-sm">{receiptParsed.confirmacion_id}</p>

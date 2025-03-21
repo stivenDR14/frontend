@@ -8,7 +8,7 @@ export const WeatherStepper = (isStepper: boolean, output: string) => {
   const parsedOutput = JSON.parse(output);
   return (
     <div
-      className={`bg-background-light dark:bg-primary-light rounded-md shadow-lg flex flex-col items-center p-4 ${
+      className={`bg-background-light dark:bg-primary-light rounded-md shadow-lg flex flex-col items-center p-4 max-h-64 overflow-y-auto ${
         isStepper ? "md:w-1/2 xs:w-full mx-4" : "w-full mb-2"
       }`}
     >

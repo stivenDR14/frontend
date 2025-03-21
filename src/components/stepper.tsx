@@ -15,11 +15,15 @@ export const STEP_COMPONENTS = {
 
 export default function Stepper({
   showGreeting,
+  isLoading,
+  isStreaming,
   userName,
   steps,
   submitInput,
 }: {
   showGreeting: boolean;
+  isLoading: boolean;
+  isStreaming: boolean;
   userName: string;
   steps: ChatSteps;
   submitInput: (input: string) => void;
@@ -48,6 +52,9 @@ export default function Stepper({
         </div>
       )}
       <div className="mx-auto w-full p-3 bg-primary-dark dark:bg-primary-light text-background-light dark:text-background-dark rounded mb-8">
+        Hey <b>{userName}</b>!
+        <br />
+        <br />
         It&apos;s time for you <b>schedule</b> your appointment!
         <br />
         Let&apos;s get started! There are some steps you need to follow for
@@ -97,7 +104,6 @@ export default function Stepper({
                       {STEP_COMPONENTS[
                         stepName as keyof typeof STEP_COMPONENTS
                       ](true, item.output, (data) => {
-                        console.log("clicked", data, stepName);
                         if (stepName === "check_appointment_availability") {
                           submitInput(
                             `For tomorrow at ${data} would be nice to have a reservation`
@@ -108,9 +114,13 @@ export default function Stepper({
                   ) : (
                     <button
                       onClick={() => {
-                        submitInput(
-                          RequestPrompt[stepName as keyof typeof RequestPrompt]
-                        );
+                        if (!isLoading && !isStreaming) {
+                          submitInput(
+                            RequestPrompt[
+                              stepName as keyof typeof RequestPrompt
+                            ]
+                          );
+                        }
                       }}
                       className="bg-secondary-light dark:bg-secondary-dark hover:bg-primary-light dark:hover:bg-primary-dark px-2 py-1 rounded-md shadow-lg mt-4"
                     >

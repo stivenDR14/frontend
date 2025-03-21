@@ -37,6 +37,79 @@ export const BotAvatar = () => (
   </svg>
 );
 
+export const Eraser = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+    <line x1="18" y1="8" x2="12" y2="14"></line>
+    <line x1="12" y1="8" x2="18" y2="14"></line>
+  </svg>
+);
+
+export const Create = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16"
+    height="16"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+  </svg>
+);
+
+export const Calendar = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="60"
+    height="60"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="text-foreground-light dark:text-foreground-dark"
+  >
+    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+    <line x1="16" y1="2" x2="16" y2="6"></line>
+    <line x1="8" y1="2" x2="8" y2="6"></line>
+    <line x1="3" y1="10" x2="21" y2="10"></line>
+    <circle cx="12" cy="15" r="2"></circle>
+  </svg>
+);
+
+export const Check = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="60"
+    height="60"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.5"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    className="text-foreground-light dark:text-foreground-dark"
+  >
+    <polyline points="20 6 9 17 4 12"></polyline>
+  </svg>
+);
+
 export const Location = () => (
   <svg
     width="60"
@@ -46,7 +119,6 @@ export const Location = () => (
     xmlns="http://www.w3.org/2000/svg"
     className="location-icon"
   >
-    {/* Sombra en el suelo */}
     <ellipse
       className="location-shadow"
       cx="12"
@@ -56,7 +128,6 @@ export const Location = () => (
       fill="rgba(0,0,0,0.3)"
     />
 
-    {/* Pin de ubicación */}
     <g className="location-pin">
       <path
         d="M12 21C15.5 17.4 19 14.1764 19 10.2C19 6.22355 15.866 3 12 3C8.13401 3 5 6.22355 5 10.2C5 14.1764 8.5 17.4 12 21Z"
@@ -76,7 +147,6 @@ export const Location = () => (
       />
     </g>
 
-    {/* Ondas de impacto */}
     <g className="location-ripples">
       <circle
         className="ripple ripple-1"
@@ -107,7 +177,6 @@ export const Location = () => (
       />
     </g>
 
-    {/* Pulso alrededor del pin */}
     <circle
       className="pin-pulse"
       cx="12"
@@ -300,11 +369,9 @@ export const WeatherSun = () => (
     strokeLinejoin="round"
     className="weather-icon"
   >
-    {/* Sol con animación de rotación */}
     <g className="sun-group">
       <circle cx="36" cy="36" r="12" fill="#FFD700" stroke="#FF8C00" />
 
-      {/* Rayos del sol con animación de pulso */}
       <g className="sun-rays">
         <line x1="36" y1="18" x2="36" y2="12" />
         <line x1="36" y1="60" x2="36" y2="54" />
@@ -317,7 +384,6 @@ export const WeatherSun = () => (
       </g>
     </g>
 
-    {/* Nube 1 con animación de temblor */}
     <g className="cloud-1">
       <path
         d="M18 48 C12 48, 8 44, 8 40 C8 36, 12 32, 16 32 C16 28, 20 24, 24 24 C28 24, 32 28, 32 32 C36 32, 40 36, 40 40 C40 44, 36 48, 30 48 Z"
@@ -326,7 +392,6 @@ export const WeatherSun = () => (
       />
     </g>
 
-    {/* Nube 2 con animación de temblor */}
     <g className="cloud-2">
       <path
         d="M58 56 C62 56, 66 52, 66 48 C66 44, 62 40, 58 40 C58 36, 54 32, 50 32 C46 32, 42 36, 42 40 C38 40, 34 44, 34 48 C34 52, 38 56, 42 56 Z"

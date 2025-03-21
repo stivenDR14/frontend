@@ -11,20 +11,20 @@ interface UseManageSessionIdReturn {
   setShowModal: (show: boolean) => void;
   handleNameSubmit: (name: string) => void;
   selectSessionId: (id: string) => void;
-  addNewSession: () => void;
 }
 
 export const useManageSessionId = (): UseManageSessionIdReturn => {
   const [sessionId, setSessionId] = useState<string>("");
   const [userName, setUserName] = useState<string>("");
-  const [isFirstTimeUser, setIsFirstTimeUser] = useState<boolean>(false);
+  const [isFirstTimeUser, setIsFirstTimeUser] = useState<boolean>(true);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [sessionIds, setSessionIds] = useState<string[]>([]);
 
   // Initialize the session id and user name
   useEffect(() => {
     // Check if it's the first time the user visits the app
-    const firstTimeUser = localStorage.getItem("first-time-user") === null;
+    const firstTimeUser = localStorage.getItem("first-time-user") !== "false";
+
     setIsFirstTimeUser(firstTimeUser);
 
     // If it's the first time, show the modal
@@ -66,6 +66,7 @@ export const useManageSessionId = (): UseManageSessionIdReturn => {
     const updatedSessions = [newSessionId, ...sessionIds];
     setSessionIds(updatedSessions);
     localStorage.setItem("session-ids", JSON.stringify(updatedSessions));
+    setIsFirstTimeUser(false);
   };
 
   // Select an existing session id
@@ -74,11 +75,6 @@ export const useManageSessionId = (): UseManageSessionIdReturn => {
     // Extract the user name from the session id
     const namePart = id.split("-")[0];
     setUserName(namePart);
-  };
-
-  // Add a new session
-  const addNewSession = () => {
-    setShowModal(true);
   };
 
   return {
@@ -90,6 +86,5 @@ export const useManageSessionId = (): UseManageSessionIdReturn => {
     setShowModal,
     handleNameSubmit,
     selectSessionId,
-    addNewSession,
   };
 };

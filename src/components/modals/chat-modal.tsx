@@ -78,7 +78,7 @@ export default function ChatModal({
 
   return (
     <div
-      className={`fixed right-0 top-[10%] h-[80%] w-[90%] md:w-[40%] z-50 bg-primary-light dark:bg-primary-dark shadow-xl rounded-l-lg transition-transform duration-300 ease-in-out ${
+      className={`fixed right-0 top-[10%] h-[80%] w-[90%] md:w-[40%] z-50 bg-primary-light dark:bg-primary-dark shadow-xl rounded-l-lg transition-transform duration-300 ease-in-out border-foreground-light dark:border-foreground-dark ${
         isOpen ? "translate-x-0" : "translate-x-full"
       }`}
     >
