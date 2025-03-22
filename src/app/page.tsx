@@ -19,6 +19,10 @@ import {
 } from "@/components/modals/dialog";
 import OnboardingModal from "@/components/modals/onboarding-modal";
 import Loader from "@/components/loader";
+import HeroBanner from "@/components/ui/HeroBanner";
+import DealershipImage from "@/components/ui/DealershipImage";
+import AppointmentImage from "@/components/ui/AppointmentImage";
+import BackgroundPattern from "@/components/ui/BackgroundPattern";
 
 export default function Home() {
   const [query, setQuery] = useState("");
@@ -157,7 +161,8 @@ export default function Home() {
   );
 
   return (
-    <div className="h-screen mx-auto p-4 flex flex-col gap-6">
+    <div className="h-screen mx-auto p-4 flex flex-col gap-6 relative">
+      <HeroBanner userName={userName} />
       <Header />
       {/* if it is loading or streaming show a loader in the mid of the screen */}
       {(isLoading || isStreaming) && (
@@ -165,7 +170,8 @@ export default function Home() {
           <Loader />
         </div>
       )}
-      <div className="flex justify-center items-center mt-4">
+      <div className="flex flex-col md:flex-row justify-center items-center mt-4 gap-4">
+        <DealershipImage />
         <Stepper
           showGreeting={showGreeting}
           userName={userName}
@@ -175,6 +181,7 @@ export default function Home() {
           submitInput={submitInput}
         />
       </div>
+      <AppointmentImage />
       <OnboardingModal
         isUserFormOpen={isUserFormOpen}
         showModal={showModal}
