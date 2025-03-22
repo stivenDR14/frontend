@@ -22,8 +22,6 @@ import Loader from "@/components/loader";
 import HeroBanner from "@/components/ui/HeroBanner";
 import DealershipImage from "@/components/ui/DealershipImage";
 import AppointmentImage from "@/components/ui/AppointmentImage";
-import BackgroundPattern from "@/components/ui/BackgroundPattern";
-
 export default function Home() {
   const [query, setQuery] = useState("");
   const [responseChunks, setResponseChunks] = useState<string>("");
