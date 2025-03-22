@@ -5,6 +5,7 @@ import { WeatherStepper } from "./stepps/weather.stepper";
 import { DealershipAddressStepper } from "./stepps/dealership-address.stepper";
 import { useState, useRef, useEffect } from "react";
 import RequestPrompt from "@/app/constants/prompts";
+import CTAImage from "./ui/CTAImage";
 
 export const STEP_COMPONENTS = {
   get_weather: WeatherStepper,
@@ -52,9 +53,6 @@ export default function Stepper({
         </div>
       )}
       <div className="mx-auto w-full p-3 bg-primary-dark dark:bg-primary-light text-background-light dark:text-background-dark rounded mb-8">
-        Hey <b>{userName}</b>!
-        <br />
-        <br />
         It&apos;s time for you <b>schedule</b> your appointment!
         <br />
         Let&apos;s get started! There are some steps you need to follow for
@@ -70,9 +68,9 @@ export default function Stepper({
             >
               <div className="flex">
                 <div className="relative">
-                  <div className="w-16 h-16 rounded-full bg-primary-dark dark:bg-foreground-dark border-2 border-foreground-light dark:border-foreground-dark flex items-center justify-center">
+                  <CTAImage>
                     {item.done && (
-                      <span className="absolute top-4 right-4 bg-primary-light dark:bg-primary-dark text-foreground-light dark:text-foreground-dark text-xs rounded-full w-8 h-8 flex items-center justify-center">
+                      <span className="absolute top-1 right-1 bg-primary-light dark:bg-primary-dark text-foreground-light dark:text-foreground-dark text-xs rounded-full w-6 h-6 flex items-center justify-center">
                         ✓
                       </span>
                     )}
@@ -90,7 +88,7 @@ export default function Stepper({
                         }}
                       ></div>
                     )}
-                  </div>
+                  </CTAImage>
                 </div>
 
                 <div
