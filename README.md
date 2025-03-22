@@ -8,6 +8,8 @@ The SuperCar Virtual Sales Assistant is designed to help customers interact with
 
 ## Features
 
+- **Onboarding**: Support for multiple user sessions
+- **Theme**: Support for light and dark theme
 - **Interactive Chat Interface**: Real-time conversation with an AI assistant
 - **Session Management**: Support for multiple user sessions
 - **Tool Integration**: The assistant can use various tools to:
