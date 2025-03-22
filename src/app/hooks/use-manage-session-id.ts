@@ -30,7 +30,6 @@ export const useManageSessionId = (): UseManageSessionIdReturn => {
     // If it's the first time, show the modal
     if (firstTimeUser) {
       setShowModal(true);
-      localStorage.setItem("first-time-user", "false");
     } else {
       // Load saved sessions
       const savedSessions = localStorage.getItem("session-ids");
@@ -66,7 +65,11 @@ export const useManageSessionId = (): UseManageSessionIdReturn => {
     const updatedSessions = [newSessionId, ...sessionIds];
     setSessionIds(updatedSessions);
     localStorage.setItem("session-ids", JSON.stringify(updatedSessions));
-    setIsFirstTimeUser(false);
+
+    if (updatedSessions && updatedSessions.length > 0) {
+      localStorage.setItem("first-time-user", "false");
+      setIsFirstTimeUser(false);
+    }
   };
 
   // Select an existing session id
